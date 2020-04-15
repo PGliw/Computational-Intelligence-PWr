@@ -4,18 +4,29 @@ Xw = max(0, randn(10, 100));
 Y = Aw * Xw;
 N = 100;
 
-[Xest, Aest, RES, MSE, SIR, elapsed_time] = optymalizacja_naprzemienna(Y, @mue_next_x, @mue_next_a, N);
+[MUE_X_est, MUE_A_est, MUE_RES, MUE_MSE, MUE_SIR, MUE_elapsed_time] = optymalizacja_naprzemienna(Y, @mue_next_x, @mue_next_a, N);
+[ALS_X_est, ALS_A_est, ALS_RES, ALS_MSE, ALS_SIR, ALS_elapsed_time] = optymalizacja_naprzemienna(Y, @als_next_x, @als_next_a, N);
 
 % wykresy
+iter = 1:N;
+
 subplot(3, 1, 1);
-plot(1:(N+1), RES);
+plot(iter, MUE_RES, '-o', iter, ALS_RES, '-x');
+legend('MUE', 'ALS');
+ylabel('Błąd residuidalny');
+xlabel('Numer iteracji');
 
 subplot(3, 1, 2);
-plot(1:(N+1), MSE);
+plot(iter, MUE_MSE, '-o', iter, ALS_MSE, '-x');
+legend('MUE', 'ALS');
+ylabel('MSE');
+xlabel('Numer iteracji');
 
 subplot(3, 1, 3);
-plot(1:(N+1), SIR);
-
+plot(iter, MUE_SIR, '-o', iter, ALS_SIR, '-x');
+legend('MUE', 'ALS');
+ylabel('SIR');
+xlabel('Numer iteracji');
 
 % Alg. MUE
 function [A_next] = mue_next_a(A, X, Y)
@@ -28,16 +39,19 @@ function [X_next] = mue_next_x(A, X, Y)
 end
 % /Alg. MUE
 
+
 % Alg. ALS
 function [A_next] = als_next_a(A, X, Y)
-    A_next = A.*(Y*X')./(A*(X*X') + eps);
-    A_next = A_next * diag( 1 ./ sum(A, 1));
+    % A = Y * X^+
+    A_next = Y * (X' * inv(X*X')); % TODO: alfa_x*I
+end
+
+function [X_next] = als_next_x(A, X, Y)
+    % X = A^+ * Y
+    X_next = inv(A' * A) * A' * Y;
 end
 % /Alg. ALS
 
-function [X_next] = als_next_x(A, X, Y)
-    X_next = X.*(A'*Y)./(A'*A*X);
-end
 
 % Alg. HALS
 
@@ -51,15 +65,14 @@ function [X, A, RES, MSE, SIR, elapsed_time] = optymalizacja_naprzemienna(Y, nex
     t_start = tic; 
     X = max(0, randn(10, 100));
     A = max(0, randn(1000, 10));
-    RES = zeros(1, N+1); MSE = zeros(1, N+1); SIR = zeros(1, N+1);
+    RES = zeros(1, N); MSE = zeros(1, N); SIR = zeros(1, N);
     for n=1:N %TODO 
-        % calc errors
-        [RES(n), MSE(n), SIR(n)] = calcErrors(A*X, Y);
         % alghoritm steps
         A = max(0, next_A_fun(A, X, Y));
         X = max(0, next_X_fun(A, X, Y));
+        % calc errors
+        [RES(n), MSE(n), SIR(n)] = calcErrors(A*X, Y);
     end
-    [RES(n+1), MSE(n+1), SIR(n+1)] = calcErrors(A*X, Y);
     elapsed_time = toc(t_start);
 end
 
