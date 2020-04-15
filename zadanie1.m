@@ -14,7 +14,7 @@ subplot(3, 1, 2);
 plot(1:(N+1), MSE);
 
 subplot(3, 1, 3);
-plot(1:(N+1), RES);
+plot(1:(N+1), SIR);
 
 
 % Alg. MUE
@@ -26,10 +26,22 @@ end
 function [X_next] = mue_next_x(A, X, Y)
     X_next = X.*(A'*Y)./(A'*A*X);
 end
+% /Alg. MUE
 
 % Alg. ALS
+function [A_next] = als_next_a(A, X, Y)
+    A_next = A.*(Y*X')./(A*(X*X') + eps);
+    A_next = A_next * diag( 1 ./ sum(A, 1));
+end
+% /Alg. ALS
+
+function [X_next] = als_next_x(A, X, Y)
+    X_next = X.*(A'*Y)./(A'*A*X);
+end
 
 % Alg. HALS
+
+% / Alg. HALS
 
 
 % wyznaczenie estymowanych faktorów A i B
@@ -44,15 +56,15 @@ function [X, A, RES, MSE, SIR, elapsed_time] = optymalizacja_naprzemienna(Y, nex
         % calc errors
         [RES(n), MSE(n), SIR(n)] = calcErrors(A*X, Y);
         % alghoritm steps
-        A = next_A_fun(A, X, Y);
-        X = next_X_fun(A, X, Y);
+        A = max(0, next_A_fun(A, X, Y));
+        X = max(0, next_X_fun(A, X, Y));
     end
     [RES(n+1), MSE(n+1), SIR(n+1)] = calcErrors(A*X, Y);
     elapsed_time = toc(t_start);
 end
 
 function [res, mse, sir] = calcErrors(Y_est, Y)
-    res = norm(Y_est)/norm(Y);
+    res = norm(Y - Y_est, 'fro')/norm(Y, 'fro');
     mse = immse(Y_est, Y); 
     sir = mean(CalcSIR(normalize(Y), normalize(Y_est)));
 end
