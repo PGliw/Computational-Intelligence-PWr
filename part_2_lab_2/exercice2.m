@@ -34,7 +34,7 @@ function U = CP(Y, P, J, iterations)
            
            % Iloczyn Hadamana faktorów poza n-tym
            indexes_without_n = copy_without_element(1:N, n);
-           B = ones(5, 5);
+           B = ones(J, J);
            for j = indexes_without_n
               B = B .* (U{j}' * U{j});
            end
