@@ -1,4 +1,4 @@
-function Y_unfolded = unfold(Y, mode)
+function Y_unfolded = unfold3(Y, mode)
     % Przeprowadza matrycyzację tensora Y względem modu mode
     % Y - tensor 3-modalny do poddania matrycyzacji
     % mode - mod, względem którego ma być przeprowadzona matrycyzacja 
