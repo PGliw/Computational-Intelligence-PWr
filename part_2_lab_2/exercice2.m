@@ -31,24 +31,28 @@ function U = CP(Y, P, J, iterations)
            Yn = unfold(Y_arr, n);
            
            % Estymacja n-tego faktora za pomocą m. najmniejszych kwadratów
-           % Wszystkie faktory poza n-tym
+           
+           % Iloczyn Hadamana faktorów poza n-tym
            indexes_without_n = copy_without_element(1:N, n);
-           U_without_n = cell(1, N-1);
-           U_without_n_array_squared = zeros(N-1, J, J);
-           for j = 1:(N-1)
-               cell_index = indexes_without_n(j);  
-               U_without_n{j} = U{cell_index};
-               U_without_n_array_squared(j, :, :) = (U{cell_index})' * U{cell_index};
+           B = ones(5, 5);
+           for j = indexes_without_n
+              B = B .* (U{j}' * U{j});
            end
-           % Iloczyn Hadamarda między poszczególnymi Ui'*Ui
-           B = fold(@(ui, uj) ui * uj, U_without_n_array_squared);
            
-           % Wyznaczenie faktora U{n}
-           U{n} = (Yn*U_without_n) / B;
+           % Iloczyn Khatri-Rao faktorów poza n-tym
+           kr_indexes = flip(indexes_without_n);
+           for j = 1:size(kr_indexes, 2)-1               
+               current_index = kr_indexes(j);
+               next_index = kr_indexes(j+1);
+               U_kr = kr(U{current_index}, U{next_index});
+           end
            
+           % Estymacja U{n}
+           U{n} = (Yn * U_kr) / B; 
+           
+           % Skalowanie n-tego faktora
            if n ~= N
-              % Skalowanie n-tego faktora
-              
+               
            end
        end
    end
