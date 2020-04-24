@@ -10,7 +10,7 @@ U{3} = max(0, rand(I(3), J));
 Y=ktensor(ones(J, 1), U);
 
 % dekompozycja tensora obserwacji i pomiar błędów
-[U_est, err] = CP(Y, 2, J, 10, @unfold3, U);
+[U_est, err] = CP(Y, 2, J, 30, @unfold3);
 
 % wykresy
 iter = 1:size(err, 1);
@@ -34,7 +34,7 @@ ylabel('SIR');
 xlabel('Numer iteracji');
 
 
-function [U, errors] = CP(Y, p, J, iterations, unfold, U_original)
+function [U, errors] = CP(Y, p, J, iterations, unfold)
 %CP wykonuje dekompozycje tensora Y na faktory z rzędem faktoryzacji J
 % p określa normę zastosowaną do normalizacji faktorów
 % itenrations określa liczbę iteracji
@@ -42,8 +42,10 @@ function [U, errors] = CP(Y, p, J, iterations, unfold, U_original)
 % przekazanie funkcji unfold jako praramter pozwala w przyszłości rozwinąć
 % ten program dla liczby modów > 3 
 % (obecnie zaimplementowaliśmy tylko unfold dla N=3 modów)
-% U_original to cell array przekazywana tylko w liczenia błędów
 
+   % U_original to cell array oryginalnych faktorów, która służy do liczenia
+   % błędów
+   U_original = Y.u;
    % Pomiar błędów w funkcji iteracji
    errors = zeros(iterations, 3);
 
