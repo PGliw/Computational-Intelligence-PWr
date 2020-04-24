@@ -8,26 +8,34 @@ N = 100;
 [ALS_X_est, ALS_A_est, ALS_RES, ALS_MSE, ALS_SIR, ALS_elapsed_time] = optymalizacja_naprzemienna(Y, @als_next_x, @als_next_a, N);
 [HALS_X_est, HALS_A_est, HALS_RES, HALS_MSE, HALS_SIR, HALS_elapsed_time] = optymalizacja_naprzemienna(Y, @hals_next_x, @hals_next_a, N);
 
+
 % wykresy
 iter = 1:N;
 
-subplot(3, 1, 1);
+subplot(4, 1, 1);
 plot(iter, MUE_RES, '-o', iter, ALS_RES, '-x', iter, HALS_RES, '-*');
 legend('MUE', 'ALS', 'HALS');
 ylabel('Błąd residuidalny');
 xlabel('Numer iteracji');
 
-subplot(3, 1, 2);
+subplot(4, 1, 2);
 plot(iter, MUE_MSE, '-o', iter, ALS_MSE, '-x', iter, HALS_MSE, '-*');
 legend('MUE', 'ALS', 'HALS');
 ylabel('MSE');
 xlabel('Numer iteracji');
 
-subplot(3, 1, 3);
+subplot(4, 1, 3);
 plot(iter, MUE_SIR, '-o', iter, ALS_SIR, '-x', iter, HALS_MSE, '-*');
 legend('MUE', 'ALS', 'HALS');
 ylabel('SIR');
 xlabel('Numer iteracji');
+
+subplot(4, 1, 4);
+bar_labels = categorical({'MUE', 'ALS', 'HALS'});
+bar_values = [MUE_elapsed_time, ALS_elapsed_time, HALS_elapsed_time];
+bar(bar_labels, bar_values);
+ylabel('Czas wykonania [s]');
+xlabel('Algorytm');
 
 % Alg. MUE
 function [A_next] = mue_next_a(A, X, Y)
