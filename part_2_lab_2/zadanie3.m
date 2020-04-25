@@ -29,23 +29,21 @@ Y_r = tensor(pictures(:, :, trainging_indexes)); % tensor obserwacji treningowyc
 labels_r = labels(trainging_indexes);
 j = 5; % TODO for loop
 U_r_cp_als = CP_ALS(Y_r, 2, j, cp_als_iterations, @unfold3); % faktory estymowane CP-APLS
-%U_cp_als{3} % macierz czynnikowa dla 3. modu zbioru tren.
+
 clusters = Cluster_numbers(1);
+[cp_als_accuracy, cp_als_rand_index, cp_als_mean_time] = run_clustering(U_r_cp_als{3}, labels_r, 4, 100);
+
+[U_r_hosvd, G] = HOSVD(Y_r, J_values(2:end), @unfold3);
+
 Y_t = tensor(pictures(:, :, test_indexes));
 labels_t = labels(test_indexes);
 
-[cp_als_accuracy, cp_als_rand_index, cp_als_mean_time] = run_clustering(U_r_cp_als{3}, labels_r, 4, 100);
-
-%U_r_cp_als
 
 % for partition_index = 1:cv_partitions.NumTestSets TODO
-%     for J = J_values   
 %         for group_size = Cluster_numbers
 %         end
-%     end
 % end
 
-%   for J = J_values
 %       test_set = pictures[test]
 %       U_cp = CP(test_set, J, ...)
 %       U_hosvd =  HOSVD(test_set)
@@ -55,7 +53,6 @@ labels_t = labels(test_indexes);
 %           measure accuracy
 %       end
 
-%%end
 
 
 loaded_image = pictures(:, :, 1);
@@ -74,4 +71,34 @@ function [mean_accuracy, rand_index, mean_time] = run_clustering(dataset, labels
     mean_accuracy = mean(results(:, 1));
     rand_index = mean(results(:, 2));
     mean_time = mean(results(:, 3));
+end
+
+function [U, G] = HOSVD(Y, J, unfold)
+%HOSVD dokonuje dekomozycji N-wymiarowego tensora obserwacji Y
+% J to wektor określający poszczególne stopnie faktoryzacji - J1, ..., JN
+% unfold to funkcja matrycyzująca tensor
+% U - cell array estymowanych faktorów
+% G - tensor rdzeniowy
+
+    N = size(size(Y), 2); % liczba modów
+       
+    U = cell(1, N);   
+    Y_arr = double(Y); % konwersja tensora na tablicę wielowymiarową
+       
+    % przemiatanie po wszystkich (N) modach tensora obserwacji Y
+    for n = 1:N
+        % Matrycyzacja względem n-tego modu
+        Yn = unfold(Y_arr, n);
+        correlation_matrix = Yn * (Yn)';
+        
+        % Wyznacznienie J(n) wektorów wektorów własnych i wartości własnych
+        % macierzy korelacji
+        [eigen_vectors, eigen_values_matrix] = eigs(correlation_matrix, J(n));
+        
+        % n-ta macierz czynnikowa jako J(n) wektorów własnych uporządkowanych
+        % malejąco wg wartości własnych
+        [sorted_values, sorted_indexes] = sort(diag(eigen_values_matrix),'descend');
+        U{n} = eigen_vectors(:, sorted_indexes(1:J(n)));
+    end
+    G = ttm(Y, U, 't'); % t oznacza transpozycję macierzy U
 end
