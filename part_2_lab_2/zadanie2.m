@@ -10,7 +10,7 @@ U{3} = max(0, rand(I(3), J));
 Y=ktensor(ones(J, 1), U);
 
 % dekompozycja tensora obserwacji i pomiar błędów
-[U_est, err] = CP(Y, 2, J, 30, @unfold3);
+[U_est, err] = CP_ALS_for_kruskal_tensor(Y, 2, J, 30, @unfold3);
 
 % wykresy
 iter = 1:size(err, 1);
@@ -33,9 +33,8 @@ plot(iter, SIR, '-o');
 ylabel('SIR');
 xlabel('Numer iteracji');
 
-
-function [U, errors] = CP(Y, p, J, iterations, unfold)
-%CP wykonuje dekompozycje tensora Y na faktory z rzędem faktoryzacji J
+function [U, errors] = CP_ALS_for_kruskal_tensor(Y, p, J, iterations, unfold)
+%CP wykonuje dekompozycje tensora Kruskala Y na faktory z rzędem faktoryzacji J
 % p określa normę zastosowaną do normalizacji faktorów
 % itenrations określa liczbę iteracji
 % unfold to funkcja o sygnaturze (tensor, mod) => macierz
@@ -50,15 +49,15 @@ function [U, errors] = CP(Y, p, J, iterations, unfold)
    errors = zeros(iterations, 3);
 
    % N - liczba modów
+   N = size(Y.u, 1); % liczba modów
    I = size(Y);
    
    % losowa inicjalizacja faktorów
-   U = cell(1, 3);
+   U = cell(1, N);
    for i=1:size(I, 2)
        U{i} = max(0, rand(I(i), J));
    end
    
-   N = size(Y.u, 1); % liczba modów
    Y_arr = double(Y); % konwersja tensora na tablicę wielowymiarową
    
    % wyznaczanie faktorów powtórzone iterations razy
@@ -82,10 +81,10 @@ function [U, errors] = CP(Y, p, J, iterations, unfold)
            
            % Iloczyn Khatri-Rao faktorów poza n-tym
            kr_indexes = flip(indexes_without_n);
-           for j = 1:size(kr_indexes, 2)-1               
-               current_index = kr_indexes(j);
-               next_index = kr_indexes(j+1);
-               U_kr = kr(U{current_index}, U{next_index});
+           U_kr = U{kr_indexes(1)};
+           for j = 2:size(kr_indexes, 2)               
+               next_index = kr_indexes(j);
+               U_kr = kr(U_kr, U{next_index});
            end
            
            % Estymacja U{n}
