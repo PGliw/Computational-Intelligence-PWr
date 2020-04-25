@@ -34,6 +34,7 @@ clusters = Cluster_numbers(1);
 [cp_als_accuracy, cp_als_rand_index, cp_als_mean_time] = run_clustering(U_r_cp_als{3}, labels_r, 4, 100);
 
 [U_r_hosvd, G] = HOSVD(Y_r, J_values(2:end), @unfold3);
+[hosvd_accuracy, hosvd_rand_index, hosvd_mean_time] = run_clustering(U_r_hosvd{3}, labels_r, 4, 100);
 
 Y_t = tensor(pictures(:, :, test_indexes));
 labels_t = labels(test_indexes);
@@ -94,11 +95,7 @@ function [U, G] = HOSVD(Y, J, unfold)
         % Wyznacznienie J(n) wektorów wektorów własnych i wartości własnych
         % macierzy korelacji
         [eigen_vectors, eigen_values_matrix] = eigs(correlation_matrix, J(n));
-        
-        % n-ta macierz czynnikowa jako J(n) wektorów własnych uporządkowanych
-        % malejąco wg wartości własnych
-        [sorted_values, sorted_indexes] = sort(diag(eigen_values_matrix),'descend');
-        U{n} = eigen_vectors(:, sorted_indexes(1:J(n)));
+        U{n} = eigen_vectors * eigen_values_matrix;
     end
     G = ttm(Y, U, 't'); % t oznacza transpozycję macierzy U
 end
