@@ -27,11 +27,12 @@ for i=1:number_of_J_values
     % Dekompozycja tensora treningowego wg różnych algorytmów
     U_cp_als = CP_ALS(Y, 2, J, cp_als_iterations, @unfold3); % faktory estymowane CP-APLS
     [U_hosvd, G] = HOSVD(Y, [J J J], @unfold3); % faktory estymowane HOVD
-    [U_pca, Y_est_pca] = SequentialPower(Y_pca, J); % wektory cech estymowane PCA
+    [U_pca, Z] = PCA(Y_pca, J); % wektory cech estymowane PCA
     
     % odtworzenie obrazów PCA
-    % pca_recreated_images = reshape(Y_pca, [I(3) I(1) I(2)]);
-    pca_rec_im = reshape(Y_est_pca(:, 1), [I(1),  I(2)]);
+    Y_est_pca = U_pca * Z';
+    pca_rec_im = reshape(Y_est_pca(1, :), [I(1),  I(2)]);
+    pca_rec_im = 255 * normalize(pca_rec_im, 'range');
     
     % odtworzenie obrazów CP ALS
     Y_est_cp_als = ktensor(ones(J, 1), U_cp_als);
