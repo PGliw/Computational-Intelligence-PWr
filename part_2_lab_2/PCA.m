@@ -9,9 +9,6 @@ function [U, Z] = PCA(Y, J)
     [eigen_vectors, eigen_values] = eigs(covariance_matrix, J);
     U = eigen_vectors;     % macierz wektorów cech
     % Wyznaczenie i normalizacja macierzy składowych głównych
-    Z_unnormalized = double(Y') * U;
-    % Z_normalized = normalize(Z_unnormalized, 'range');
-    % Z = 255 * Z_normalized;
-    Z = normalize(Z_unnormalized, 'range');
+    Z = U' * double(Y);
 end
 

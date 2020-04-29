@@ -30,9 +30,9 @@ for i=1:number_of_J_values
     [U_pca, Z] = PCA(Y_pca, J); % wektory cech estymowane PCA
     
     % odtworzenie obrazów PCA
-    Y_est_pca = U_pca * Z';
-    pca_rec_im = reshape(Y_est_pca(1, :), [I(1),  I(2)]);
-    pca_rec_im = 255 * normalize(pca_rec_im, 'range');
+    Y_est_pca = U_pca * Z;
+    Y_est_pca_3D = fold3_3(Y_est_pca, I);
+    pca_recreated_images = 255 * normalize(Y_est_pca_3D, 'range');
     
     % odtworzenie obrazów CP ALS
     Y_est_cp_als = ktensor(ones(J, 1), U_cp_als);
@@ -44,7 +44,7 @@ for i=1:number_of_J_values
     
     % wyświetlenie obrazu PCA
     subplot(3, number_of_J_values, i);
-    imshow(uint8(pca_rec_im));
+    imshow(uint8(pca_recreated_images(:, :, 1)));
     title(['J=' num2str(J)]);
     
     % wyświetlenie obrazu CP ALS
