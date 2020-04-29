@@ -21,6 +21,9 @@ first_recreated_pictures = zeros(I(1), I(2), size(J_values, 2));
 % zbiór trenujący i jego prawidłowe grupowanie
 Y = tensor(pictures); % tensor obserwacji treningowych
 
+% dla PCA trzeba zmienić macierz 3D na 2D
+Y_pca = unfold3(pictures, 3); 
+
 number_of_J_values = size(J_values, 2);
 
 % akumulator wyników klastrowania dla różnych wartości J
@@ -35,23 +38,29 @@ for i=1:number_of_J_values
     
     % Dekompozycja tensora treningowego wg CP ALS
     % U_cp_als = CP_ALS(pictures, 2, J, cp_als_iterations, @unfold3); % faktory estymowane CP-APLS
-    [U_hosvd, G] = HOSVD(Y, [J J J], @unfold3); % faktory estymowane HOSVD
+    % [U_hosvd, G] = HOSVD(Y, [J J J], @unfold3); % faktory estymowane HOSVD
+    [U_pca, Z] = PCA(Y_pca, J); % składowe główne dla PCA
+    
+    % odtworzenie obrazów 
+    % Y_est = ktensor(ones(J, 1), U_cp_als); % dla CP ALS
+    % Y_est = ttensor(G, U_hosvd); % dla HOSVD
+    Y_est = U_pca * Z;
     
     % Klastrowanie
     % clustering_labels = kmeans(U_cp_als{3}, persons_count); % dla CP ALS
-    clustering_labels = kmeans(U_hosvd{3}, persons_count); % dla HOSVD
+    % clustering_labels = kmeans(U_hosvd{3}, persons_count); % dla HOSVD
+    clustering_labels = kmeans(Y_est, persons_count); % dla PCA
     
     [Acc,rand_index,match] = AccMeasure(labels, clustering_labels');    
     acc_measure_coeffitients(:, i) = [Acc,rand_index];
     match_transposed = match';
     acc_measure_mappings(:, :, i) = match_transposed;
         
-    % odtworzenie obrazów 
-    % Y_est = ktensor(ones(J, 1), U_cp_als); % dla CP ALS
-    Y_est = ttensor(G, U_hosvd); % dla HOSVD
-    recreated_images = double(Y_est);
+    % recreated_images = double(Y_est); % dla HOSVD i dla CP ALS
+    Y_est_pca_3D = fold3_3(Y_est, I); % dla PCA
+    recreated_images = 255 * normalize(Y_est_pca_3D, 'range'); % dla PCA 
     
-    images_count = size(recreated_images, 3);
+    images_count = size(recreated_images, 3); 
     
     figure(i);    
     title(['Obrazy dla J=' num2str(J)]);    
