@@ -1,0 +1,13 @@
+Dependencies that needs to be downoladed and included to Matlab's PATH:
+1. Tensor Toolbox Tool
+source: https://www.tensortoolbox.org/
+
+Already included dependencies:
+1. kr.m function 
+source: https://www.mathworks.com/matlabcentral/fileexchange/28872-khatri-rao-product
+2. AccMeasure.m function
+source: https://www.mathworks.com/matlabcentral/fileexchange/32197-clustering-results-measurement
+3. plotConfMat.m function
+source: https://www.mathworks.com/matlabcentral/fileexchange/64185-plot-confusion-matrix
+4. att_faces dataset
+source: https://www.kaggle.com/kasikrit/att-database-of-faces
