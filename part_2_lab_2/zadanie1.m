@@ -14,7 +14,7 @@ iter = 1:N;
 
 subplot(4, 1, 1);
 plot(iter, MUE_RES, '-o', iter, ALS_RES, '-x', iter, HALS_RES, '-*');
-legend('MUE', 'ALS', 'HALS');
+legend('MUE', 'HALS');
 ylabel('Błąd residuidalny');
 xlabel('Numer iteracji');
 

@@ -1,5 +1,5 @@
 function [mean_accuracy, rand_index, mean_time] = run_clustering_measurment(dataset, labels, clusters, iterations_count)
-    %RUN_CLUSTERING_MEASURMENT powtarza kNN na zbiorze danych dataset
+    %RUN_CLUSTERING_MEASURMENT powtarza klasteryzację k-średnich na zbiorze danych dataset
     % dataset - macierz danych
     % labels - lista poprawnych grup
     % clusters - liczba klastrów na które zostanie podzielony zbiór danych

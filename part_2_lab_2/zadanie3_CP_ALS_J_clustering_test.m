@@ -1,8 +1,11 @@
-function zadanie3_clustering_test(persons_count, method)
+function acc_measure_coefficients = zadanie3_clustering_test(persons_count, method, J_values)
     %ZADANIE3_CLUSTERINT_TEST porównuje jakość klasyfikacji i drukuje
     %odtworzone obrazy 
-    % param persons_count - liczba osób do wczytania z pliku
-    % param method - jedna z metod redukcji wym.: 'PCA', 'CP-ALS', 'HOSVD'
+    % param persons_count - liczba osób do wczytania z pliku, np. 5
+    % param method - jedna z metod redukcji wym.: 'PCA'/'CP-ALS'/'HOSVD'
+    % param J_values - wektor wartości J np.  J_values = [4, 10, 20, 30]
+    % returns acc_measure_coefficients - tablica
+    % side effect: drukuje na ekranie wyniki klasteryzacji
     if(persons_count > 40)
         err("Maxiumum persons count is 40");
     end
@@ -11,10 +14,7 @@ function zadanie3_clustering_test(persons_count, method)
        err(['Incorrect method name:' method]) 
     end
     
-    % Stałe
-    K=5; % Parametr K-krotnej walidacji przyżowej walidacji
-    J_values = [4, 10, 20, 30];
-    
+    % Stałe    
     cp_als_iterations = 30;
     images_in_row = 10;
         
@@ -23,11 +23,7 @@ function zadanie3_clustering_test(persons_count, method)
     
     % Wektor kolejnych rozmiarów tensora obrazów
     I = size(pictures);
-    pictures_indexes = 1:I(3);
     
-    % Macierz 3-wymiarowa do przechowywania 1 obrazu wyznaczonego dla kolejnych
-    % wartości J (rzędu faktoryzacji)
-    first_recreated_pictures = zeros(I(1), I(2), size(J_values, 2));
             
     % zbiór trenujący i jego prawidłowe grupowanie
     Y = tensor(pictures); % tensor obserwacji treningowych
@@ -41,7 +37,7 @@ function zadanie3_clustering_test(persons_count, method)
     clustering_results = zeros(persons_count * images_in_row, number_of_J_values);
     
     % pomiar poprawności klastrowania dla każdego J
-    acc_measure_coeffitients = zeros(2, number_of_J_values);
+    acc_measure_coefficients = zeros(2, number_of_J_values);
     acc_measure_mappings = zeros(persons_count, 2, number_of_J_values);
     
     for i=1:number_of_J_values
@@ -73,7 +69,7 @@ function zadanie3_clustering_test(persons_count, method)
         
         % Ocena jakości klasteryzacji
         [Acc,rand_index,match] = AccMeasure(labels, clustering_labels');    
-        acc_measure_coeffitients(:, i) = [Acc,rand_index];
+        acc_measure_coefficients(:, i) = [Acc,rand_index];
         match_transposed = match';
         acc_measure_mappings(:, :, i) = match_transposed;
             

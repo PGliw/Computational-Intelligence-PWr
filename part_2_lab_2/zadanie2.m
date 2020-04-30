@@ -18,6 +18,7 @@ RES = err(:, 1);
 MSE = err(:, 2);
 SIR = err(:, 3);
 
+figure;
 subplot(3, 1, 1);
 plot(iter, RES, '-o');
 ylabel('Błąd residuidalny');
