@@ -1,0 +1,6 @@
+function [ A, S ] = AMUSE( X )
+    M = 3;
+    T = size(X,);
+    disp(T);
+    
+end

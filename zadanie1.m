@@ -16,7 +16,7 @@ plot(iter, MUE_RES, '-o', iter, ALS_RES, '-x', iter, HALS_RES, '-*');
 legend('MUE', 'ALS', 'HALS');
 ylabel('Błąd residuidalny');
 xlabel('Numer iteracji');
-
+sdfs
 subplot(3, 1, 2);
 plot(iter, MUE_MSE, '-o', iter, ALS_MSE, '-x', iter, HALS_MSE, '-*');
 legend('MUE', 'ALS', 'HALS');
