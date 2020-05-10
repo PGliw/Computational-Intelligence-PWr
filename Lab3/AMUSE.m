@@ -1,11 +1,26 @@
-function [ A, S ] = AMUSE( X )
-    M = 3;
+function [ A, S ] = AMUSE( X, N, przes )
     T = size(X,2);
-    disp(T);
-    Xcent = X - (T^-1*X*eye(1));
-%     TODO find out what h means
-    Cx = (1/T)*Xcent*3; 
-    Cx = eig(Cx);
-    disp(Cx);
+    %Centralizacja
+    Xcent = bsxfun(@minus, X, mean(X,2));
+    %Korelacja
+    Cx = (1/T)* (Xcent * Xcent');
+    %EVD
+    [V, VAL] = eig(Cx);
+    %Wybielanie
+    Vbar = V(:, 1:N);
+    VALbar = diag(diag(VAL(:,1:N)));
+    Z = (VALbar^-0.5)*Vbar'*Xcent;
+    %Autokorelacja
+    Z1 = Z(:,1:T-przes);
+    Z2 = Z(:, 1+przes:T);
+    R = (1/(T-przes))*Z1*Z2';
+    %Symetryzacja
+    Rbar = (R+R')/2;
+    %EVD
+    [Vz, VALz] = eig(Rbar);
+    %Estymatory
+    S = Vz' * Z;
+    A = Vbar*(VALbar^0.5)*Vz;
+    disp(S(:,1:10));
     
 end
