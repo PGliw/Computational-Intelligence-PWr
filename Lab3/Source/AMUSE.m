@@ -5,11 +5,11 @@ function [ A, S ] = AMUSE( X, N, przes )
     %Korelacja
     Cx = (1/T)* (Xcent * Xcent');
     %EVD
-    [V, VAL] = eig(Cx);
+    [V, VAL] = eigs(Cx, 3);
     %Wybielanie
     Vbar = V(:, 1:N);
     VALbar = diag(diag(VAL(:,1:N)));
-    Z = (VALbar^-(1/2))*Vbar'*Xcent;
+    Z = (VALbar^(-0.5))*Vbar'*Xcent;
     %Autokorelacja
     Z1 = Z(:, 1:T-przes);
     Z2 = Z(:, 1+przes:T);
@@ -17,8 +17,9 @@ function [ A, S ] = AMUSE( X, N, przes )
     %Symetryzacja
     Rbar = (R+R')/2;
     %EVD
-    [Vz, ~] = eig(Rbar);
+    [Vz, ~] = eigs(Rbar, 3);
     %Estymatory
     S = Vz' * Z;
-    A = Vbar*(VALbar^(1/2))*Vz;
+    A = Vbar*(VALbar^(-0.5))*Vz;
 end
+

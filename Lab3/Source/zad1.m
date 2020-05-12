@@ -1,9 +1,9 @@
 SH = load('Shannon_Hurley.mat');
 MO = load('Music_Ozerov.mat');
 
-AnalysisData = SH.S;
+AnalysisData = MO.S;
 
-[mixedData, mixingSource] = mixData(AnalysisData, 10);
+[mixedData, mixingSource] = mixData(AnalysisData, 3);
 [A, S] = AMUSE(mixedData, 3, 1);
 
 SIRScoreData = CalcSIR(AnalysisData', S');

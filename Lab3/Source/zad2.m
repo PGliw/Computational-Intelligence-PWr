@@ -1,7 +1,7 @@
 SH = load('Shannon_Hurley.mat');
 MO = load('Music_Ozerov.mat');
 
-AnalysisData = MO.S;
+AnalysisData = SH.S;
 
 [mixedData, mixingSource] = mixData(AnalysisData, 3);
 
