@@ -43,7 +43,7 @@ objective.fun.plot <- function(function.name, axes = {axis(1); axis(2)}) {
   persp3D(objective.fun$x1, objective.fun$x2, objective.fun$value, theta = 45, phi = 25, expand = 0.5, ticktype = "detailed", axes = TRUE)
 }
 
-objective.fun.plot(function.names[1])
+# objective.fun.plot(function.names[1])
 
 # finds global optimums of function given by name
 objective.fun.opt.indecies <- function(function.name) {
