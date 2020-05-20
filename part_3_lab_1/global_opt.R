@@ -36,13 +36,14 @@ objective.fun.get <- function(function.name) {
 }
 
 # plots function given by name
-objective.fun.plot <- function(function.name) {
+objective.fun.plot <- function(function.name, axes = {axis(1); axis(2)}) {
   objective.fun <- objective.fun.get(function.name)
-  filled.contour(objective.fun$x1, objective.fun$x2, objective.fun$values, color.palette = jet.colors)
+  # filled.contour(objective.fun$x1, objective.fun$x2, objective.fun$values, plot.axes={axis(1); axis(2); points(-0.8,-7.7,  pch=3, cex=2, col="black", lwd=4); points(-7.7, -0.8,  pch=3, cex=2, col="black", lwd=4)}, color.palette = jet.colors)
+  filled.contour(objective.fun$x1, objective.fun$x2, objective.fun$values, plot.axes=axes, color.palette=jet.colors)
   persp3D(objective.fun$x1, objective.fun$x2, objective.fun$value, theta = 45, phi = 25, expand = 0.5, ticktype = "detailed", axes = TRUE)
 }
 
-objective.fun.plot(function.names[2])
+objective.fun.plot(function.names[1])
 
 # finds global optimums of function given by name
 objective.fun.opt.indecies <- function(function.name) {
