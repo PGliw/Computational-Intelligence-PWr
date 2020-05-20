@@ -28,7 +28,19 @@ GA.run.iterations <- function(function.name, iterations.count, params) {
   mean(iteration.scores)
 }
 
-res <- GA.run.iterations(function.name, 10, params)
+# res <- GA.run.iterations(function.name, 10, params)
+
+# runs experiment for every param.name value in param.range
+GA.run.experiment <- function(function.name, iterations.count, params, param.name, param.range) {
+  param.scores <- NULL # accumulator
+  # GA.best <- NULL # best result
+  for (param.value.index in seq_along(param.range)) {
+    params$param.name <- param.range[param.value.index]
+    param.score <- GA.run.iterations(function.name, iterations.count, params)
+    param.scores[param.value.index] <- param.score
+  }
+  param.scores
+}
 
 
-
+res <- GA.run.experiment(function.name, 10, params, "pmutation", c(0.0, 0.1, 0.2, 0.3))
