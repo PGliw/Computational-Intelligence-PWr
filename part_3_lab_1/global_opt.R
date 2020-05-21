@@ -1,5 +1,5 @@
-# Title     : TODO
-# Objective : TODO
+# Title     : Computional Intelligence
+# Objective : Examine Genetic Algorithm
 # Created by: Piotr
 # Created on: 20.05.2020
 

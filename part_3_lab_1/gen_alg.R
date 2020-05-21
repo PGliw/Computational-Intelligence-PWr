@@ -1,62 +1,80 @@
-# Title     : TODO
-# Objective : TODO
+# Title     : Computional Intelligence
+# Objective : Examine Genetic Algorithm
 # Created by: Piotr
 # Created on: 20.05.2020
 
+# runs function genetic algorithm for function given by name iterations.count times
+# params is list that contains params for genetic algorithm
 GA.run.iterations <- function(function.name, iterations.count, params) {
-  problem.dimen <- getProblemDimen(function.name)
-  default.bounds.matrix <- matrix(unlist(getDefaultBounds(function.name)), ncol = problem.dimen, byrow = TRUE)
+  default.bounds <- getDefaultBounds(function.name)
   objective.fun <- objective.fun.of(function.name)
-  iteration.scores <- NULL # accumulator
+  iteration.mean.scores <- NULL # accumulator for mean results in each iteration
+  iteration.best.scores <- NULL # accumulator for best results in each iteration
   for (iteration in 1:iterations.count) {
     GA <- ga(type = "real-valued",
              fitness = function(x) -objective.fun(x[1], x[2]),
-             lower = default.bounds.matrix[1,],
-             upper = default.bounds.matrix[2,],
+             lower = c(default.bounds$lower[1], default.bounds$lower[2]),
+             upper = c(default.bounds$upper[1], default.bounds$upper[2]),
              popSize = params$pop.size,
              maxiter = params$max.iter,
              elitism = params$elitism,
              pcrossover = params$pcrossover,
              pmutation = params$pmutation)
-    iteration.scores[iteration] <- objective.fun(GA@solution[, 1], GA@solution[, 2])
+    iteration.best.scores[iteration] <- -GA@fitnessValue # objective.fun(GA@solution[, 1], GA@solution[, 2])
+    iteration.mean.scores[iteration] <- mean(apply(GA@population, 1, function(x1x2) { objective.fun(x1x2[1], x1x2[2]) }))
   }
-  mean(iteration.scores)
+  list(best.mean = mean(iteration.best.scores), mean.mean = mean(iteration.mean.scores), iteration.best.scores = iteration.best.scores)
 }
-
-# res <- GA.run.iterations(function.name, 10, params)
 
 # runs experiment for every param.name value in param.range
 GA.run.experiment <- function(function.name, iterations.count, params, param.name, param.range) {
-  param.scores <- NULL # accumulator
+  param.best.scores <- NULL # accumulator for best mean results in generation
+  param.mean.scores <- NULL # accumulator for mean mean results in generation
   # GA.best <- NULL # best result
   for (param.value.index in seq_along(param.range)) {
-    params$param.name <- param.range[param.value.index]
+    params[[param.name]] <- param.range[param.value.index]
     param.score <- GA.run.iterations(function.name, iterations.count, params)
-    param.scores[param.value.index] <- param.score
+    param.best.scores[param.value.index] <- param.score$best.mean
+    param.mean.scores[param.value.index] <- param.score$mean.mean
   }
-  param.scores
+  list(best.scores = param.best.scores, mean.scores = param.mean.scores)
 }
 
-function.name <- "Hosaki"
+# runs experiments as a batch
+GA.run.experiment.list <- function (function.name, param.names.and.labels, param.value.ranges, iterations.count=10) {
+  for (param.index in seq_along(param.names.and.labels$names)) {
+    param.name <- param.names.and.labels$names[param.index]
+    param.value.range <- param.value.ranges[[param.name]]
+    param.score.range <- GA.run.experiment(function.name, iterations.count, params, param.name, param.value.range)
+    scores.plot(
+      x = param.value.range,
+      y1 = param.score.range$best.scores,
+      y2 = param.score.range$mean.scores,
+      const = getGlobalOpt(function.name),
+      x.label = param.names.and.ranges$labels[param.index]
+    )
+  }
+}
 
-params <- list(pop.size = 10, max.iter = 100, elitism = 0.1, pcrossover = 0.8, pmutation = 0.1)
+#plots best (y1) and mean (y2) scores for each param value x
+scores.plot <- function(x, y1, y2, const, x.label, y.label = "Wartość funkcji celu") {
+  matplot(x, cbind(y1, y2), col = c("green", "blue"), type = c("o", "o"), pch = 1:2, xlab = x.label, ylab = y.label)
+  abline(h = const, col = "red")
+}
 
-param.names.and.ranges <- list(
-  labels = c("Rozmiar populacji", "Liczba pokoleń", "Poziom elityzmu", "Prawdopodobieństwo krzyżowania", "Prawdopodobieństwo mutacji"),
+# experiments for Schuber function
+function.name <- "Schubert"
+params <- list(pop.size = 100, max.iter = 100, elitism = 0, pcrossover = 0.8, pmutation = 0.2)
+param.names.and.labels <- list(
   names = c("pop.size", "max.iter", "elitism", "pcrossover", "pmutation"),
-  bounds.lower = c(40, 40, 0.0, 0.0, 0.0),
-  bounds.upper = c(400, 400, 1.0, 1.0, 1.0),
-  bounds.step = c(40, 40, 0.1, 0.1, 0.1)
+  labels = c("Rozmiar populacji", "Liczba pokoleń", "Poziom elityzmu", "Prawdopodobieństwo krzyżowania", "Prawdopodobieństwo mutacji")
+)
+param.value.ranges <- list(
+  pop.size = c(1, 2, 3, 4, 5, 7, 10, 15, 20, 30, 40, 60, 80, 100, 140, 160),
+  max.iter = c(1, 2, 3, 4, 5, 7, 10, 15, 20, 30, 40, 60, 80, 100, 140, 160),
+  elitism = c(0, 1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 60, 80, 100),
+  pcrossover = seq(0, 1, by = 0.1),
+  pmutation = seq(0, 1, by = 0.1)
 )
 
-
-for (param.index in seq_along(param.names.and.ranges)) {
-  param.name <- param.names.and.ranges$names[param.index]
-  param.value.range <- seq(param.names.and.ranges$bounds.lower[param.index], param.names.and.ranges$bounds.upper[param.index], by = param.names.and.ranges$bounds.step[param.index])
-  param.score.range <- GA.run.experiment(function.name, 10, params, param.name, param.value.range)
-  plot(param.value.range, param.score.range, xlab = param.names.and.ranges$labels[param.index], ylab = "Wartość funkcji celu")
-  lines(param.value.range, param.score.range, col = "red")
-  global.opt <- getGlobalOpt(function.name)
-  abline(h = global.opt, col = "blue")
-}
-
+GA.run.experiment.list(function.name, param.names.and.labels, param.value.ranges)
