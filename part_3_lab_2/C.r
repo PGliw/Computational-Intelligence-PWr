@@ -1,1 +1,1 @@
-# require("GA")
+require("GA")
