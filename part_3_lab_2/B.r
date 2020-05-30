@@ -1,5 +1,7 @@
 require("TSP")
-tsplib.dir.path = "C:/Users/dawid/Desktop/Semestr 3/Computational-Intelligence-PWr/part_3_lab_2/TSPfiles"
+require("GA")
+
+tsplib.dir.path = "part_3_lab_2/TSPfiles"
 
 params <- list(pop.size = 100, max.iter = 100, elitism = 0, pcrossover = 0.8, pmutation = 0.2)
 param.names.and.labels <- list(
@@ -84,6 +86,6 @@ scores.plot <- function(x, y1, y2, const, x.label, y.label = "Wartość funkcji 
 
 
 
-for (instance in tsplib.instances) {
+for (instance in tsplib.file.instances) {
   GA.run.experiment.list(instance, param.names.and.labels, param.value.ranges)
 }
