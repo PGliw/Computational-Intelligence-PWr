@@ -86,8 +86,6 @@ scores.plot <- function(x, y1, y2, const, x.label, y.label = "Wartość funkcji 
   # abline(h = 699, col = "red")
 }
 
-
-
 for (instance in tsplib.file.instances) {
   GA.run.experiment.list(instance, param.names.and.labels, param.value.ranges)
 }

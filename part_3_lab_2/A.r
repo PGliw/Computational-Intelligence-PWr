@@ -2,42 +2,24 @@ require("GA")
 require("globalOptTests")
 
 custom.crossing.function <- function(object, parents) {
-  # Pierwszy potomek - operator OX
+  
   parents <- object@population[parents,, drop = FALSE]
   n <- ncol(parents)
-  cxPoints <- sample(seq(2, n - 1), size = 2)
-  cxPoints <- seq(min(cxPoints), max(cxPoints))
   children <- matrix(as.double(NA), nrow = 2, ncol = n)
-  children[, cxPoints] <- parents[, cxPoints]
-  j <- 1
-  pos <- c((max(cxPoints) + 1):n, 1:(max(cxPoints)))
-  val <- setdiff(parents[-j, pos], children[j, cxPoints])
-  i <- intersect(pos, which(is.na(children[j,])))
-  children[j, i] <- val
-  # Drugi potomek - operator PMX
-  cxPoints <- sample(1:n, size = 2)
-  cxPoints <- seq(min(cxPoints), max(cxPoints))
-  children2 <- matrix(as.double(NA), nrow = 2, ncol = n)
-  children2[, cxPoints] <- parents[, cxPoints]
-  for (i in setdiff(1:n, cxPoints)) {
-    if (!any(parents[1, i] == children2[2, cxPoints])) {
-      children2[2, i] <- parents[1, i]
-    }
-  }
-  children2[2, is.na(children2[2,])] <- setdiff(parents[1,],
-                                                 children2[2,])
-  children[2,] = children2[2,]
+  tmp <- runif(n, 1, 2)
+  children[1,] <- tmp*parents[1,] + (1-tmp)*parents[2,]
+  children[2,] <- tmp * parents[2,] + (1 - tmp) * parents[1,]
   out <- list(children = children, fitness = rep(NA, 2))
   return(out)
 }
 
 custom.mutation.function <- function(object, parent) {
   mutate <- as.vector(object@population[parent,])
-  # Liczba losowych przestawien 
+  # Amount of random changes
   random_changes <- sample(1:(length(mutate) / 20), 1)
   i <- 1
   while (i <= random_changes) {
-    # Losowe miejsca (indeksy) do zamiany
+    # Random indexes to change
     random_indexes <- sample(1:length(mutate), 2)
     temp <- mutate[random_indexes[1]]
     mutate[random_indexes[1]] <- mutate[random_indexes[2]]
@@ -47,20 +29,17 @@ custom.mutation.function <- function(object, parent) {
   return(mutate)
 }
 
-# Operatory mutacji
+# Mutation operators
 omutation.custom = custom.mutation.function
-omutation.default = gaperm_simMutation
-omutation.range = c(omutation.custom, gaperm_simMutation, gaperm_ismMutation,
-                    gaperm_swMutation, gaperm_dmMutation,
-                    gaperm_scrMutation)
-omutation.names = c("custom", "sim", "ism", "sw", "dm", "scr")
+omutation.default = gareal_raMutation
+omutation.range = c(custom.mutation.function, gareal_raMutation, gareal_nraMutation, gareal_rsMutation, gareal_powMutation)
+omutation.names = c("custom", "ra", "nra", "rs", "pow")
 
-# Operatory krzyzowania
+# Crossover operators
 ocrossover.custom = custom.crossing.function
 ocrossover.default = gaperm_oxCrossover
-ocrossover.range = c(ocrossover.custom, gaperm_cxCrossover, gaperm_pmxCrossover,
-                     gaperm_oxCrossover, gaperm_pbxCrossover)
-ocrossover.names = c("custom", "cx", "pmx", "ox", "pbx")
+ocrossover.range = c(custom.crossing.function, gareal_spCrossover, gareal_waCrossover, gareal_laCrossover, gareal_blxCrossover, gareal_laplaceCrossover)
+ocrossover.names = c("custom", "sp", "wa", "la", "blx", "laplace")
 
 
 
@@ -130,25 +109,28 @@ GA.run.experiment.list <- function(function.name, iterations.count = 10, crossov
 }
 
 #plots best (y1) and mean (y2) scores for each param value x
-scores.plot <- function(y1, y2, y.label = "Wartość funkcji celu") {
+scores.plot <- function(y1, y2, x.label = "Różnica między wartością funkcji celu a wartością globalnego optimum") {
+  y1 = y1 - optimum.value
+  y2 = y2 - optimum.value
   # Create plots for crossover operators
   png(file = "Crossover_best.png")
-  barplot(abs(y1), main = "Porównanie operatorów krzyzowania", ylab = y.label, names.arg = ocrossover.names, , col=rainbow(5))
+  barplot(abs(y1), main = "Porównanie operatorów krzyzowania", xlab = x.label, names.arg = ocrossover.names, , col=rainbow(6))
   dev.off()
   png(file = "Crossover_means.png")
-  barplot(abs(y2), main = "Porównanie operatorów krzyzowania", ylab = y.label, names.arg = ocrossover.names, , col=rainbow(5))
+  barplot(abs(y2), main = "Porównanie operatorów krzyzowania", xlab = x.label, names.arg = ocrossover.names, , col=rainbow(6))
   dev.off()
 
   # Create plots for mutation operators
   # png(file = "Mutation_best.png")
-  # barplot(abs(y1), main = "Porównanie operatorów mutacji", ylab = y.label, names.arg = omutation.names, col=rainbow(6))
+  # barplot(abs(y1), main = "Porównanie operatorów mutacji", xlab = x.label, names.arg = omutation.names, col=rainbow(6))
   # dev.off()
   # png(file = "Mutation_means.png")
-  # barplot(abs(y2), main = "Porównanie operatorów mutacji", ylab = y.label, names.arg = omutation.names, col = rainbow(6))
+  # barplot(abs(y2), main = "Porównanie operatorów mutacji", xlab = x.label, names.arg = omutation.names, col = rainbow(6))
   # dev.off()
 }
 
-type.name = "permutation"
+optimum.value = -186.7309
+type.name = "real-valued"
 
 # experiments for Schuber function
 function.name <- "Schubert"
