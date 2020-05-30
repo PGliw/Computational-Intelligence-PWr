@@ -1,38 +1,6 @@
 require("GA")
 require("globalOptTests")
 
-# Nazwa badanej funkcji
-function.name = "Schubert"
-# Liczba iteracji dla usredniania wynikow
-test.iterations = 1
-# Rozmiar populacji
-popSize.default = 50
-# Liczba generacji
-maxiter.default = 100
-# Selekcja elitarna
-elitism.default = 0.05
-# Prawdopodobienstwo krzyzowania
-pcrossover.default = 0.8
-# Prawdopodobienstwo mutacji
-pmutation.default = 0.1
-
-# Operatory mutacji
-omutation.custom = custom.mutation.function
-omutation.default = gaperm_simMutation
-omutation.range = c(gaperm_simMutation, gaperm_ismMutation,
-                    gaperm_swMutation, gaperm_dmMutation,
-                    gaperm_scrMutation)
-omutation.names = c("custom", "sim", "ism", "sw", "dm", "scr")
-
-# Operatory krzyzowania
-ocrossover.custom = custom.crossing.function
-ocrossover.default = gaperm_oxCrossover
-ocrossover.range = c(gaperm_cxCrossover, gaperm_pmxCrossover,
-                     gaperm_oxCrossover, gaperm_pbxCrossover)
-ocrossover.names = c("custom", "cx", "pmx", "ox", "pbx")
-oselection.default = gaperm_lrSelection
-
-
 custom.crossing.function <- function(object, parents) {
   # Pierwszy potomek - operator OX
   parents <- object@population[parents,, drop = FALSE]
@@ -79,125 +47,116 @@ custom.mutation.function <- function(object, parent) {
   return(mutate)
 }
 
+# Operatory mutacji
+omutation.custom = custom.mutation.function
+omutation.default = gaperm_simMutation
+omutation.range = c(omutation.custom, gaperm_simMutation, gaperm_ismMutation,
+                    gaperm_swMutation, gaperm_dmMutation,
+                    gaperm_scrMutation)
+omutation.names = c("custom", "sim", "ism", "sw", "dm", "scr")
+
+# Operatory krzyzowania
+ocrossover.custom = custom.crossing.function
+ocrossover.default = gaperm_oxCrossover
+ocrossover.range = c(ocrossover.custom, gaperm_cxCrossover, gaperm_pmxCrossover,
+                     gaperm_oxCrossover, gaperm_pbxCrossover)
+ocrossover.names = c("custom", "cx", "pmx", "ox", "pbx")
+
+
+
+
+
 # returns objective function given by name
 objective.fun.of <- function(function.name) {
   # Get the length of the parameter vector expected by a given objective function.
   problem.dimen <- getProblemDimen(function.name)
-
   function(x1, x2) {
     x1x2 <- c(x1, x2)
     goTest(par = c(x1x2, rep(0, problem.dimen - length(x1x2))), fnName = function.name, checkDim = TRUE)
   }
 }
 
-objective.fun.get <- function(function.name) {
-  # Default lower and upper bounds (box constraints) for the given objective function
-  default.bounds <- getDefaultBounds(function.name)
-
-  x1 <- seq(default.bounds$lower[1], default.bounds$upper[1], by = 0.1)
-  x2 <- seq(default.bounds$lower[2], default.bounds$upper[2], by = 0.1)
-
-  # Acutal objective function of given name
-  objective.fun <- objective.fun.of(function.name)
-
-  # Apply objective.fun to each pair (x1', x2') where x1' belongs to x1 and x2 belongs to x2
-  objective.fun.value <- outer(x1, x2, Vectorize(objective.fun))
-  list(x1 = x1, x2 = x2, values = objective.fun.value)
-}
-
-# plots function given by name
-objective.fun.plot <- function(function.name, axes = { axis(1); axis(2) }) {
-  objective.fun <- objective.fun.get(function.name)
-  # jpeg("Schubert2D.jpeg")
-  # filled.contour(objective.fun$x1, objective.fun$x2, objective.fun$values, plot.axes = axes, color.palette = jet.colors)
-  # dev.off()
-  # jpeg("Schubert3D.jpeg")
-  # persp3D(objective.fun$x1, objective.fun$x2, objective.fun$value, theta = 45, phi = 25, expand = 0.5, ticktype = "detailed", axes = TRUE, xlab = "x1", ylab="x2", zlab="f(x1, x2)")
-  # dev.off()
-}
-
-
-
-drawPlot <- function(results, names, title) {
-  dev.new()
-  y_limit <- c(min(results), max(results))
-  for (i in 1:length(results[1, ])) {
-    plot(((101 - length(results[, i])):100), results[, i], type = "l",
-         col = (9 * i), xaxt = 'n', yaxt = 'n', xlab = '', ylab = '',
-         lwd = 2, ylim = y_limit)
-    par(new = TRUE)
-  }
-  axis(side = 2)
-  axis(side = 1)
-  title(main = title, xlab = "Generacja (iteracja)",
-        ylab = "Wartość funkcji")
-  legend(x = "bottomright", names, col = (1:length(names)) * 9,
-         lty = c(1), bg = "gray90")
-  par(new = FALSE)
-}
-
-# Funkcja usredniajaca wyniki w kazdej generacji (iteracji)
-avgGenerations <- function(o.mutation, o.crossover) {
+# runs function genetic algorithm for function given by name iterations.count times
+# params is list that contains params for genetic algorithm
+GA.run.iterations <- function(function.name, iterations.count, crossover.operator = gaControl(type.name)$crossover, mutation.operator = gaControl(type.name)$mutation) {
   default.bounds <- getDefaultBounds(function.name)
   objective.fun <- objective.fun.of(function.name)
-  solution <- matrix(0, maxiter.default, 6)
-  GA <- NULL
-  for (i in 1:test.iterations) {
-    GA <- ga("permutation", function(x) - objective.fun(x[1], x[2]),
+  iteration.mean.scores <- NULL # accumulator for mean results in each iteration
+  iteration.best.scores <- NULL # accumulator for best results in each iteration
+  for (iteration in 1:iterations.count) {
+    GA <- ga(type = type.name,
+             fitness = function(x) - objective.fun(x[1], x[2]),
              lower = c(default.bounds$lower[1], default.bounds$lower[2]),
              upper = c(default.bounds$upper[1], default.bounds$upper[2]),
-             popSize = popSize.default, 
-             maxiter = maxiter.default,
-             pmutation = pmutation.default, 
-             pcrossover = pcrossover.default,
-             mutation = o.mutation, 
-             crossover = o.crossover,
-             selection = oselection.default, 
-             elitism = elitism.default)
-    solution = solution + GA@summary
+             crossover = crossover.operator,
+             mutation = mutation.operator
+             )
+    iteration.best.scores[iteration] <- -GA@fitnessValue # objective.fun(GA@solution[, 1], GA@solution[, 2])
+    iteration.mean.scores[iteration] <- mean(apply(GA@population, 1, function(x1x2) { objective.fun(x1x2[1], x1x2[2]) }))
   }
-  return(solution / test.iterations)
+  list(best.mean = mean(iteration.best.scores), mean.mean = mean(iteration.mean.scores), iteration.best.scores = iteration.best.scores)
 }
 
-##### Testy operatorow mutacji #####
-test.omutation <- function() {
-  # Test wlasnego operatora
-  results.omutation <- NULL
-  results.omutation =
-    data.frame(custom = avgGenerations(custom.mutation.function,
-                                       ocrossover.default)[, 1])
-  # Testy wbudowanych operatorow
-  i <- 2
-  for (omutation in omutation.range) {
-    results.omutation[omutation.names[i]] <-
-      avgGenerations(omutation,
-                     ocrossover.default)[, 1]
-    i <- i + 1
+# runs experiment for every param.name value in param.range
+GA.run.experiment <- function(function.name, iterations.count, crossover.range = NULL, mutation.range = NULL) {
+  operator.best.scores <- NULL # accumulator for best mean results in generation
+  operator.mean.scores <- NULL # accumulator for mean mean results in generation
+  # GA.best <- NULL # best result
+  index <- 1
+  for(operator in crossover.range) {
+    operator.score <- GA.run.iterations(function.name, iterations.count, crossover.operator = operator)
+    operator.best.scores[index] <- operator.score$best.mean
+    operator.mean.scores[index] <- operator.score$mean.mean
+    index = index + 1
   }
-  drawPlot(results.omutation, omutation.names,
-           "Porównanie operatorów mutacji")
+  for (operator in mutation.range) {
+    operator.score <- GA.run.iterations(function.name, iterations.count, mutation.operator = operator)
+    operator.best.scores[index] <- operator.score$best.mean
+    operator.mean.scores[index] <- operator.score$mean.mean
+    index = index + 1
+  }
+  # print(operator.best.scores)
+  list(best.scores = operator.best.scores, mean.scores = operator.mean.scores)
 }
 
-##### Testy operatorow mutacji #####
-test.ocrossover <- function() {
-  # Test wlasnego operatora
-  results.omutation <- NULL
-  results.omutation =
-    data.frame(custom = avgGenerations(omutation.default,
-                                       custom.crossing.function)[, 1])
-  # Testy wbudowanych operatorow
-  i <- 2
-  for (omutation in omutation.range) {
-    results.omutation[ocrossover.names[i]] <-
-      avgGenerations(omutation.default,
-                     omutation)[, 1]
-    i <- i + 1
-  }
-  drawPlot(results.omutation, ocrossover.names,
-           "Porównanie operatorów mutacji")
+# runs experiments as a batch
+GA.run.experiment.list <- function(function.name, iterations.count = 10, crossover.range = NULL, mutation.range = NULL) {
+  param.score.range <- GA.run.experiment(function.name, iterations.count, crossover.range, mutation.range)
+  print(param.score.range)
+  scores.plot(
+    y1 = param.score.range$best.scores,
+    y2 = param.score.range$mean.scores
+  )
 }
 
-# objective.fun.plot("Schubert")
+#plots best (y1) and mean (y2) scores for each param value x
+scores.plot <- function(y1, y2, y.label = "Wartość funkcji celu") {
+  # Create plots for crossover operators
+  png(file = "Crossover_best.png")
+  barplot(abs(y1), main = "Porównanie operatorów krzyzowania", ylab = y.label, names.arg = ocrossover.names, , col=rainbow(5))
+  dev.off()
+  png(file = "Crossover_means.png")
+  barplot(abs(y2), main = "Porównanie operatorów krzyzowania", ylab = y.label, names.arg = ocrossover.names, , col=rainbow(5))
+  dev.off()
 
-test.omutation()
-# test.ocrossover()
+  # Create plots for mutation operators
+  # png(file = "Mutation_best.png")
+  # barplot(abs(y1), main = "Porównanie operatorów mutacji", ylab = y.label, names.arg = omutation.names, col=rainbow(6))
+  # dev.off()
+  # png(file = "Mutation_means.png")
+  # barplot(abs(y2), main = "Porównanie operatorów mutacji", ylab = y.label, names.arg = omutation.names, col = rainbow(6))
+  # dev.off()
+}
+
+type.name = "permutation"
+
+# experiments for Schuber function
+function.name <- "Schubert"
+
+#Function used to test all crossover operators
+GA.run.experiment.list(function.name, 10, crossover.range = ocrossover.range)
+
+#Function used to test all mutation operators
+# GA.run.experiment.list(function.name, 10, mutation.range = omutation.range)
+
+
