@@ -80,7 +80,9 @@ GA.run.experiment.list <- function(function.name, param.names.and.labels, param.
 
 #plots best (y1) and mean (y2) scores for each param value x
 scores.plot <- function(x, y1, y2, const, x.label, y.label = "Wartość funkcji celu") {
+  png(file = paste(x.label, ".png"))
   matplot(x, cbind(y1, y2), col = c("green", "blue"), type = c("o", "o"), pch = 1:2, xlab = x.label, ylab = y.label)
+  dev.off()
   # abline(h = 699, col = "red")
 }
 
