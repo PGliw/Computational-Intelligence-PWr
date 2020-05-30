@@ -15,7 +15,8 @@ param.value.ranges <- list(
   pcrossover = seq(0, 1, by = 0.1),
   pmutation = seq(0, 1, by = 0.1)
 )
-# Lista testowanych instancji TSPLib
+
+# List of tested instances from TSPlib library
 tsplib.file.instances <- list(
   read_TSPLIB(paste(tsplib.dir.path, "dantzig42.tsp", sep = "/")),
   read_TSPLIB(paste(tsplib.dir.path, "brazil58.tsp", sep = "/"))
@@ -25,8 +26,6 @@ tsp.fit.function <- function(x, instance) {
   tour <- TOUR(x, tsp = instance)
   return(tour_length(tour))
 }
-
-print(tsplib.file.instances)
 
 # runs function genetic algorithm for function given by name iterations.count times
 # params is list that contains params for genetic algorithm
@@ -83,7 +82,6 @@ scores.plot <- function(x, y1, y2, const, x.label, y.label = "Wartość funkcji 
   png(file = paste(x.label, ".png"))
   matplot(x, cbind(y1, y2), col = c("green", "blue"), type = c("o", "o"), pch = 1:2, xlab = x.label, ylab = y.label)
   dev.off()
-  # abline(h = 699, col = "red")
 }
 
 for (instance in tsplib.file.instances) {

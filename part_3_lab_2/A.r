@@ -2,7 +2,6 @@ require("GA")
 require("globalOptTests")
 
 custom.crossing.function <- function(object, parents) {
-  
   parents <- object@population[parents,, drop = FALSE]
   n <- ncol(parents)
   children <- matrix(as.double(NA), nrow = 2, ncol = n)
@@ -41,10 +40,6 @@ ocrossover.default = gaperm_oxCrossover
 ocrossover.range = c(custom.crossing.function, gareal_spCrossover, gareal_waCrossover, gareal_laCrossover, gareal_blxCrossover, gareal_laplaceCrossover)
 ocrossover.names = c("custom", "sp", "wa", "la", "blx", "laplace")
 
-
-
-
-
 # returns objective function given by name
 objective.fun.of <- function(function.name) {
   # Get the length of the parameter vector expected by a given objective function.
@@ -80,7 +75,6 @@ GA.run.iterations <- function(function.name, iterations.count, crossover.operato
 GA.run.experiment <- function(function.name, iterations.count, crossover.range = NULL, mutation.range = NULL) {
   operator.best.scores <- NULL # accumulator for best mean results in generation
   operator.mean.scores <- NULL # accumulator for mean mean results in generation
-  # GA.best <- NULL # best result
   index <- 1
   for(operator in crossover.range) {
     operator.score <- GA.run.iterations(function.name, iterations.count, crossover.operator = operator)
@@ -94,14 +88,12 @@ GA.run.experiment <- function(function.name, iterations.count, crossover.range =
     operator.mean.scores[index] <- operator.score$mean.mean
     index = index + 1
   }
-  # print(operator.best.scores)
   list(best.scores = operator.best.scores, mean.scores = operator.mean.scores)
 }
 
 # runs experiments as a batch
 GA.run.experiment.list <- function(function.name, iterations.count = 10, crossover.range = NULL, mutation.range = NULL) {
   param.score.range <- GA.run.experiment(function.name, iterations.count, crossover.range, mutation.range)
-  print(param.score.range)
   scores.plot(
     y1 = param.score.range$best.scores,
     y2 = param.score.range$mean.scores
