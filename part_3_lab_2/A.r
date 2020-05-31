@@ -30,14 +30,14 @@ custom.mutation.function <- function(object, parent) {
 
 # Mutation operators
 omutation.custom = custom.mutation.function
-omutation.default = gareal_raMutation
-omutation.range = c(custom.mutation.function, gareal_raMutation, gareal_nraMutation, gareal_rsMutation, gareal_powMutation)
+omutation.range = c(custom.mutation.function, gareal_raMutation, 
+                    gareal_nraMutation, gareal_rsMutation, gareal_powMutation)
 omutation.names = c("custom", "ra", "nra", "rs", "pow")
 
 # Crossover operators
 ocrossover.custom = custom.crossing.function
-ocrossover.default = gaperm_oxCrossover
-ocrossover.range = c(custom.crossing.function, gareal_spCrossover, gareal_waCrossover, gareal_laCrossover, gareal_blxCrossover, gareal_laplaceCrossover)
+ocrossover.range = c(custom.crossing.function, gareal_spCrossover, 
+                    gareal_waCrossover, gareal_laCrossover, gareal_blxCrossover, gareal_laplaceCrossover)
 ocrossover.names = c("custom", "sp", "wa", "la", "blx", "laplace")
 
 # returns objective function given by name
